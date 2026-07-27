@@ -85,6 +85,72 @@ class ReconciliationEngineTest {
         assertThat(out.get(0).discrepancyType()).isEqualTo("MISSING_EXTERNAL");
     }
 
+    // ── TICKET-ADV047 — Edge-case tests ──────────────────────────────────
+
+    @Test
+    @DisplayName("single internal trade with no external feed returns one BREAK")
+    void testReconcile_singleInternalNoExternal_returnsBreak() {
+        // given
+        EquityTrade internal = equity("EQU-20260603-0010", "100.00", "1000");
+
+        // when
+        List<ReconResult> out = engine.reconcile(
+                List.of(internal), List.of(), ReconciliationRule.EXACT);
+
+        // then
+        assertThat(out).hasSize(1);
+        assertThat(out.get(0).status()).isEqualTo(ReconResult.Status.BREAK);
+        assertThat(out.get(0).discrepancyType()).isEqualTo("MISSING_EXTERNAL");
+    }
+
+    @Test
+    @DisplayName("all-mismatched trades produce ReconSummary with matched=0, broken=3")
+    void testReconcile_allMismatched_summaryShowsZeroMatched() {
+        // given — three trades with deliberately different prices
+        List<TradeType> internals = List.of(
+                equity("EQU-20260603-0011", "100.00", "1000"),
+                equity("EQU-20260603-0012", "100.00", "1000"),
+                equity("EQU-20260603-0013", "100.00", "1000"));
+        List<TradeType> externals = List.of(
+                equity("EQU-20260603-0011", "200.00", "1000"),
+                equity("EQU-20260603-0012", "200.00", "1000"),
+                equity("EQU-20260603-0013", "200.00", "1000"));
+
+        // when
+        List<ReconResult> out = engine.reconcile(internals, externals, ReconciliationRule.EXACT);
+        ReconSummary summary = out.stream().collect(new ReconSummaryCollector());
+
+        // then
+        assertThat(summary.total()).isEqualTo(3);
+        assertThat(summary.matched()).isEqualTo(0);
+        assertThat(summary.broken()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("null internal list returns empty result without NPE")
+    void testReconcile_nullInternal_returnsEmpty() {
+        // when
+        List<ReconResult> out = engine.reconcile(null, List.of(), ReconciliationRule.EXACT);
+
+        // then
+        assertThat(out).isEmpty();
+    }
+
+    @Test
+    @DisplayName("null external list returns BREAKs without NPE")
+    void testReconcile_nullExternal_returnsBreaks() {
+        // given
+        EquityTrade internal = equity("EQU-20260603-0020", "100.00", "1000");
+
+        // when
+        List<ReconResult> out = engine.reconcile(List.of(internal), null, ReconciliationRule.EXACT);
+
+        // then
+        assertThat(out).hasSize(1);
+        assertThat(out.get(0).status()).isEqualTo(ReconResult.Status.BREAK);
+        assertThat(out.get(0).discrepancyType()).isEqualTo("MISSING_EXTERNAL");
+    }
+
     // ── Helper ──────────────────────────────────────────────────────────────
 
     private EquityTrade equity(String ref, String price, String qty) {
