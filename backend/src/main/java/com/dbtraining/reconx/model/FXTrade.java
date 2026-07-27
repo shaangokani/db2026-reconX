@@ -49,7 +49,6 @@ public final class FXTrade implements TradeType {
 
     /** Notional in ccy2 = notionalCcy1 * fxRate. */
     @Override public Money notional() {
-        // DONE: TODO(TICKET-ADV020): return new Money(notionalCcy1 * fxRate, ccy2).
         return new Money(notionalCcy1.multiply(fxRate), ccy2);
     }
 
@@ -68,8 +67,9 @@ public final class FXTrade implements TradeType {
     }
 
     @Override public String toString() {
-        // TODO(TICKET-ADV030): "FXTrade[ref=..., CCY1/CCY2, notional=... CCY1, rate=..., side=...]"
-        throw new UnsupportedOperationException("TICKET-ADV030");
+        return "FXTrade[ref=%s, %s/%s, notional=%s %s, rate=%s, side=%s]"
+                .formatted(tradeRef, ccy1.getCurrencyCode(), ccy2.getCurrencyCode(),
+                        notionalCcy1, ccy1.getCurrencyCode(), fxRate, side);
     }
 
     public static final class Builder {
@@ -90,11 +90,6 @@ public final class FXTrade implements TradeType {
         public Builder counterpartyId(long v)      { this.counterpartyId = v; return this; }
 
         public FXTrade build() {
-            // DONE: TODO(TICKET-ADV020):
-            //   - Objects.requireNonNull each required field.
-            //   - ccy1 must differ from ccy2 (IllegalStateException otherwise).
-            //   - fxRate must be > 0.
-            //   - return new FXTrade(this).
             Objects.requireNonNull(tradeRef,     "tradeRef");
             Objects.requireNonNull(ccy1,         "ccy1");
             Objects.requireNonNull(ccy2,         "ccy2");

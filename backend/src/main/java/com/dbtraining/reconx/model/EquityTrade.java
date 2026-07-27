@@ -53,7 +53,6 @@ public final class EquityTrade implements TradeType {
 
     /** Notional = quantity * price in the trade currency. */
     @Override public Money notional() {
-        // DONE TODO(TICKET-ADV019): return new Money(quantity * price, currency).
         return new Money(quantity.multiply(price), currency);
     }
 
@@ -76,9 +75,8 @@ public final class EquityTrade implements TradeType {
 
     @Override
     public String toString() {
-        // TODO(TICKET-ADV030): "EquityTrade[ref=..., symbol=..., qty=..., price=... CCY, side=...]"
-        //                     — must NOT leak counterparty PII.
-        throw new UnsupportedOperationException("TICKET-ADV030");
+        return "EquityTrade[ref=%s, symbol=%s, qty=%s, price=%s %s, side=%s]"
+                .formatted(tradeRef, instrumentSymbol, quantity, price, currency.getCurrencyCode(), side);
     }
 
     /** Fluent builder. Required fields validated in {@link #build()}. */
@@ -103,12 +101,6 @@ public final class EquityTrade implements TradeType {
         public Builder counterpartyId(long v)         { this.counterpartyId = v;  return this; }
 
         public EquityTrade build() {
-            // DONE TODO(TICKET-ADV019):
-            //   - Objects.requireNonNull each required field (tradeRef, instrumentSymbol,
-            //     quantity, price, currency, side, tradeDate).
-            //   - quantity and price must be > 0 (IllegalStateException otherwise).
-            //   - return new EquityTrade(this).
-            //throw new UnsupportedOperationException("TICKET-ADV019");
             Objects.requireNonNull(tradeRef,         "tradeRef");
             Objects.requireNonNull(instrumentSymbol, "instrumentSymbol");
             Objects.requireNonNull(quantity,         "quantity");
