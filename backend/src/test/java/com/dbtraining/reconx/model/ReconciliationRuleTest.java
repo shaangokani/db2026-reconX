@@ -19,9 +19,8 @@ class ReconciliationRuleTest {
             "QTY_TOLERANCE_5UNITS, 100.00, 100.00, 10, 16, false",
             "LOOSE,                100.00, 104.00, 10, 18, true"
     })
-    void matches(ReconciliationRule rule, BigDecimal pa, BigDecimal pb,
-                 BigDecimal qa, BigDecimal qb, boolean expected) {
-        // TODO(TICKET-ADV026): assert rule.matches(pa, qa, pb, qb) equals expected for each CSV row.
-        org.junit.jupiter.api.Assertions.fail("TICKET-ADV026 not implemented yet");
-    }
+     void matches(ReconciliationRule rule, BigDecimal pa, BigDecimal pb,
+                  BigDecimal qa, BigDecimal qb, boolean expected) {
+         assertThat(rule.matches(pa, qa, pb, qb)).isEqualTo(expected);
+     }
 }
