@@ -5,6 +5,8 @@ import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -32,7 +34,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "trades")
 @EntityListeners(AuditingEntityListener.class)
-// @org.hibernate.envers.Audited                  // re-enable when envers tables are migrated
+@Audited
 @SQLRestriction("deleted_at IS NULL")
 public class Trade {
 
@@ -45,10 +47,12 @@ public class Trade {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "instrument_id")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Instrument instrument;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "counterparty_id")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Counterparty counterparty;
 
     @Column(name = "asset_class", nullable = false, length = 20)
