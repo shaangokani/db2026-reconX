@@ -29,8 +29,8 @@ class ReconciliationServiceTest {
 
         // then
         ArgumentCaptor<ReconResult> captor = ArgumentCaptor.forClass(ReconResult.class);
-        verify(repo).save(captor.capture());
-        assertThat(captor.getValue().tradeRef()).isEqualTo("TRD-1");
-        assertThat(captor.getValue().status()).isEqualTo(ReconResult.Status.MATCHED);
+        verify(repo, org.mockito.Mockito.times(2)).save(captor.capture());
+        assertThat(captor.getAllValues().get(0).tradeRef()).isEqualTo("TRD-1");
+        assertThat(captor.getAllValues().get(0).status()).isEqualTo(ReconResult.Status.MATCHED);
     }
 }
