@@ -1,6 +1,11 @@
 package com.dbtraining.reconx.repository.entity;
 
+import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Type;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * TICKET-ADV051 — JPA entity Instrument. JSONB metadata column wired via
@@ -26,6 +31,15 @@ public class Instrument {
 
     @Column(nullable = false, length = 3)
     private String currency;
+
+    /**
+     * JSONB metadata: tick size, lot size, exchange code, etc.
+     * On H2 (dev profile) this stores as a CLOB; on Postgres it's true JSONB
+     * and is queryable via the @> operator.
+     */
+    @Type(JsonBinaryType.class)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, Object> metadata = new HashMap<>();
 
     @Column(length = 12)
     private String isin;

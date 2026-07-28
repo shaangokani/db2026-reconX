@@ -27,5 +27,6 @@
     <include file="changes/008-seed.xml"          relativeToChangelogFile="true"/>
     <include file="changes/009-envers-revinfo.xml" relativeToChangelogFile="true"/>
     <include file="changes/010-create-trades-aud.xml" relativeToChangelogFile="true"/>
+    <include file="changes/011-add-instrument-metadata.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
