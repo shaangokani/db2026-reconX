@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="010-create-trades-aud" author="trainer">
+        <createTable tableName="trades_aud">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="trade_ref" type="VARCHAR(30)"/>
+            <column name="instrument_id" type="BIGINT"/>
+            <column name="counterparty_id" type="BIGINT"/>
+            <column name="asset_class" type="VARCHAR(20)"/>
+            <column name="side" type="VARCHAR(4)"/>
+            <column name="quantity" type="NUMERIC(18,4)"/>
+            <column name="price" type="NUMERIC(18,4)"/>
+            <column name="trade_date" type="DATE"/>
+            <column name="status" type="VARCHAR(20)"/>
+            <column name="deleted_at" type="TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="modified_at" type="TIMESTAMP"/>
+            <column name="rev" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revtype" type="INT"/>
+        </createTable>
+
+        <addPrimaryKey columnNames="id,rev" constraintName="pk_trades_aud" tableName="trades_aud"/>
+        <addForeignKeyConstraint baseTableName="trades_aud" baseColumnNames="rev"
+                                 constraintName="fk_trades_aud_revinfo"
+                                 referencedTableName="revinfo" referencedColumnNames="rev"/>
+    </changeSet>
+
+</databaseChangeLog>
