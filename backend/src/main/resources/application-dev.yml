@@ -29,3 +29,9 @@ spring:
 logging:
   level:
     com.dbtraining.reconx: DEBUG
+
+## Temporarily expose full health details in dev for README verification
+management:
+  endpoint:
+    health:
+      show-details: always

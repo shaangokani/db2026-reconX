@@ -38,7 +38,7 @@ public class Instrument {
      * and is queryable via the @> operator.
      */
     @Type(JsonBinaryType.class)
-    @Column(columnDefinition = "jsonb")
+    @Column
     private Map<String, Object> metadata = new HashMap<>();
 
     @Column(length = 12)
