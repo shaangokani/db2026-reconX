@@ -74,6 +74,24 @@
         </rollback>
     </changeSet>
 
+    <changeSet id="008-seed-trades" author="trainer">
+        <loadData file="data/trades.csv" tableName="trades"
+                  separator="," relativeToChangelogFile="true">
+            <column name="trade_ref" type="STRING"/>
+            <column name="instrument_id" type="NUMERIC"/>
+            <column name="counterparty_id" type="NUMERIC"/>
+            <column name="asset_class" type="STRING"/>
+            <column name="side" type="STRING"/>
+            <column name="quantity" type="NUMERIC"/>
+            <column name="price" type="NUMERIC"/>
+            <column name="trade_date" type="DATE"/>
+            <column name="status" type="STRING"/>
+        </loadData>
+        <rollback>
+            <sql>DELETE FROM trades WHERE trade_ref LIKE 'TRD-2026%';</sql>
+        </rollback>
+    </changeSet>
+
     <changeSet id="008-seed-recon-break" author="trainer">
         <!-- One trade + one OPEN recon_break so PUT /api/v1/recon/results/{id}/resolve
              has a real row to resolve out of the box (demos, Postman collections,
