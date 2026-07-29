@@ -31,6 +31,7 @@ import static com.dbtraining.reconx.repository.TradeSpecifications.*;
  * TICKET-ADV066 — updateStatus (PATCH)
  * TICKET-ADV067 — softDelete
  * TICKET-ADV083 — increments trade_creation_total Counter on create
+ * TICKET-ADV086 — records trade_value_total DistributionSummary on create
  * TICKET-ADV129 — publishes TradeEvent on every state change
  * TICKET-ADV055/ADV056 — list() uses Specifications + filter query
  * ============================================================================
@@ -90,6 +91,7 @@ public class TradeService {
 
         Trade saved = tradeRepo.save(trade);
         metrics.incrementTradeCreated();
+        metrics.recordTradeValue(saved.getQuantity().multiply(saved.getPrice()).doubleValue());
 
         return saved;
     }

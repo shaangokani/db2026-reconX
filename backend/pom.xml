@@ -122,6 +122,12 @@
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
+        <!-- Required for @Timed (TICKET-ADV084) to actually proxy anything —
+             not pulled in transitively by the actuator starter. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
 
         <!-- Caching (ADV081-ADV082) -->
         <dependency>

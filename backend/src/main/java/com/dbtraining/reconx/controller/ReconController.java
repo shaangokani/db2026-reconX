@@ -2,17 +2,25 @@ package com.dbtraining.reconx.controller;
 
 import com.dbtraining.reconx.dto.ReconRunRequest;
 import com.dbtraining.reconx.exception.TradeNotFoundException;
+import com.dbtraining.reconx.model.EquityTrade;
+import com.dbtraining.reconx.model.ReconciliationRule;
+import com.dbtraining.reconx.model.Side;
+import com.dbtraining.reconx.model.TradeRef;
+import com.dbtraining.reconx.model.TradeType;
 import com.dbtraining.reconx.repository.ReconBreakRepository;
+import com.dbtraining.reconx.repository.TradeRepository;
 import com.dbtraining.reconx.repository.entity.ReconBreak;
+import com.dbtraining.reconx.repository.entity.Trade;
+import com.dbtraining.reconx.service.ReconciliationEngine;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,6 +29,9 @@ import java.util.UUID;
  * TICKET-ADV068 — POST /api/v1/recon/run — returns 202 + jobId
  * TICKET-ADV069 — GET  /api/v1/recon/jobs/{jobId}/results
  * TICKET-ADV070 — PUT  /api/v1/recon/results/{id}/resolve
+ * TICKET-ADV084 — synchronously drives ReconciliationEngine.reconcile() so its
+ *   @Timed histogram has real samples (no async worker/Kafka consumer exists
+ *   yet to pick up the queued job otherwise).
  */
 @RestController
 @RequestMapping("/v1/recon")
@@ -29,17 +40,45 @@ import java.util.UUID;
 public class ReconController {
 
     private final ReconBreakRepository breaks;
+    private final TradeRepository trades;
+    private final ReconciliationEngine engine;
 
-    public ReconController(ReconBreakRepository breaks) { this.breaks = breaks; }
+    public ReconController(ReconBreakRepository breaks, TradeRepository trades, ReconciliationEngine engine) {
+        this.breaks = breaks;
+        this.trades = trades;
+        this.engine = engine;
+    }
 
     @PostMapping("/run")
-    @Operation(summary = "Trigger a reconciliation job (async)")
+    @Operation(summary = "Trigger a reconciliation job")
+    @Transactional(readOnly = true)
     public ResponseEntity<Map<String, String>> runRecon(@Valid @RequestBody ReconRunRequest req) {
-        // DONE: (TICKET-ADV068): generate a jobId, write a row to recon_jobs, and
-        //   return 202 Accepted with {"jobId": ..., "status": "QUEUED"}. A
-        //   worker (Day 6 / Kafka consumer) picks the job up asynchronously.
         String jobId = UUID.randomUUID().toString();
+
+        // No external counterparty feed exists yet (that's the Day-9 Kafka
+        // pipeline), so this reconciles the internal book against itself —
+        // enough to drive real Timer samples without fabricating data.
+        List<TradeType> internal = trades
+                .findEquityTradesForReconciliation(req.from(), req.to(), req.counterpartyId())
+                .stream()
+                .<TradeType>map(ReconController::toEquityTrade)
+                .toList();
+        engine.reconcile(internal, internal, ReconciliationRule.EXACT);
+
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of("jobId", jobId, "status", "QUEUED"));
+    }
+
+    private static EquityTrade toEquityTrade(Trade t) {
+        return EquityTrade.builder()
+                .tradeRef(TradeRef.of(t.getTradeRef()))
+                .instrumentSymbol(t.getInstrument().getSymbol())
+                .quantity(t.getQuantity())
+                .price(t.getPrice())
+                .currency(t.getInstrument().getCurrency())
+                .side(Side.valueOf(t.getSide()))
+                .tradeDate(t.getTradeDate())
+                .counterpartyId(t.getCounterparty().getId())
+                .build();
     }
 
     @GetMapping("/jobs/{jobId}/results")

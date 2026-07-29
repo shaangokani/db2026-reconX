@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -42,4 +43,20 @@ public interface TradeRepository
                               Pageable pageable);
 
     long countByStatus(String status);
+
+    /**
+     * TICKET-ADV084 — internal feed for ReconciliationEngine.reconcile(). Scoped to
+     * EQUITY: Trade's generic schema (no isin/couponRate/ccy1-2/strike columns)
+     * can only be losslessly converted to EquityTrade, not the other TradeType variants.
+     */
+    @Query("""
+        SELECT t FROM Trade t
+        JOIN FETCH t.instrument
+        WHERE t.assetClass = 'EQUITY'
+          AND t.tradeDate BETWEEN :from AND :to
+          AND (:counterpartyId IS NULL OR t.counterparty.id = :counterpartyId)
+        """)
+    List<Trade> findEquityTradesForReconciliation(@Param("from") LocalDate from,
+                                                  @Param("to") LocalDate to,
+                                                  @Param("counterpartyId") Long counterpartyId);
 }
