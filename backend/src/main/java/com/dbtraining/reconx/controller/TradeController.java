@@ -86,16 +86,18 @@ public class TradeController {
     public TradeResponse updateStatus(@PathVariable Long id,
                                       @RequestBody Map<String, String> body,
                                       @AuthenticationPrincipal Object principal) {
-        // TODO(TICKET-ADV066): read body.get("status") and call
+        // (TICKET-ADV066): read body.get("status") and call
         //   service.updateStatus(id, status, actor). Return mapper.toResponse(saved).
-        throw new UnsupportedOperationException("TICKET-ADV066");
+        String status = body.get("status");
+        return mapper.toResponse(service.updateStatus(id, status, String.valueOf(principal)));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Soft delete (sets deleted_at)")
     public ResponseEntity<Void> delete(@PathVariable Long id,
                                        @AuthenticationPrincipal Object principal) {
-        // TODO(TICKET-ADV067): service.softDelete(id, actor); return 204 No Content.
-        throw new UnsupportedOperationException("TICKET-ADV067");
+        // (TICKET-ADV067): service.softDelete(id, actor); return 204 No Content.
+        service.softDelete(id, String.valueOf(principal));
+        return ResponseEntity.noContent().build();
     }
 }

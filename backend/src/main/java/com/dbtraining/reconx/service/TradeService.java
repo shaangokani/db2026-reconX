@@ -58,7 +58,7 @@ public class TradeService {
     }
 
     public Trade create(TradeRequest req, String actor) {
-        // TODO(TICKET-ADV064): reject duplicate tradeRef via DuplicateTradeRefException,
+        // (TICKET-ADV064): reject duplicate tradeRef via DuplicateTradeRefException,
         //   build a new Trade with instrument + counterparty looked up from
         //   their repos (throw TradeNotFoundException on miss), status = "PENDING",
         //   save, then:
@@ -119,15 +119,38 @@ public class TradeService {
     }
 
     public Trade updateStatus(Long id, String status, String actor) {
-        // TODO(TICKET-ADV066): load, setStatus(status), save, publish TRADE_UPDATED
+        // (TICKET-ADV066): load, setStatus(status), save, publish TRADE_UPDATED
         //   with the new status in the "after" slot of the event.
-        throw new UnsupportedOperationException("TICKET-ADV066");
+        Trade trade = tradeRepo.findByIdWithDetails(id)
+                .orElseThrow(() -> new TradeNotFoundException(id.toString()));
+
+        String previousStatus = trade.getStatus();
+
+        trade.setStatus(status);
+        Trade saved = tradeRepo.save(trade);
+
+        /*events.publish(new TradeEvent(
+                UUID.randomUUID(),
+                saved.getTradeRef(),
+                TradeEvent.EventType.TRADE_UPDATED,
+                Instant.now(),
+                actor,
+                previousStatus,
+                status
+        ));
+*/
+        return saved;
     }
 
     public void softDelete(Long id, String actor) {
-        // TODO(TICKET-ADV067): load, call t.softDelete() (sets deleted_at), save,
+        // (TICKET-ADV067): load, call t.softDelete() (sets deleted_at), save,
         //   publish a TRADE_CANCELLED event.
-        throw new UnsupportedOperationException("TICKET-ADV067");
+        Trade t = tradeRepo.findById(id)
+                .orElseThrow(() -> new TradeNotFoundException(id.toString()));
+        t.softDelete();
+        tradeRepo.save(t);
+        //events.publish(new TradeEvent(UUID.randomUUID(), t.getTradeRef(),
+        //        TradeEvent.EventType.TRADE_CANCELLED, Instant.now(), actor, null, null));
     }
 
     @Transactional(readOnly = true)

@@ -25,6 +25,14 @@ public interface TradeRepository
 
     @Query("""
         SELECT t FROM Trade t
+        JOIN FETCH t.instrument
+        JOIN FETCH t.counterparty
+        WHERE t.id = :id
+        """)
+    Optional<Trade> findByIdWithDetails(@Param("id") Long id);
+
+    @Query("""
+        SELECT t FROM Trade t
         WHERE t.tradeDate BETWEEN :from AND :to
           AND (:status IS NULL OR t.status = :status)
         """)
