@@ -37,3 +37,5 @@ curl -s -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/v1/instrumen
 curl -i -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/v1/instruments/SAP.DE
 
 curl -s -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/actuator/prometheus | grep '^cache_'
+
+curl -s -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/actuator/prometheus | grep trades_by_status
