@@ -35,4 +35,5 @@ curl -i -X DELETE http://localhost:8080/api/v1/trades/1
 
 curl -s -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/v1/instruments/1
 curl -i -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/v1/instruments/SAP.DE
-  
+
+curl -s -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/actuator/prometheus | grep '^cache_'
