@@ -2,6 +2,9 @@ package com.dbtraining.reconx.controller;
 
 import com.dbtraining.reconx.dto.TradeRequest;
 import com.dbtraining.reconx.dto.TradeResponse;
+import com.dbtraining.reconx.repository.entity.Counterparty;
+import com.dbtraining.reconx.repository.entity.Instrument;
+import com.dbtraining.reconx.repository.entity.Trade;
 import com.dbtraining.reconx.service.TradeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -48,22 +51,8 @@ class TradeControllerWebMvcTest {
     @WithMockUser(roles = "TRADER")
     void testCreateTrade_authenticated_returns201() throws Exception {
         Instant now = Instant.now();
-        when(tradeService.create(any())).thenReturn(
-                new TradeResponse(
-                        42L,
-                        "TRD-20260315-9999",
-                        1L,
-                        "SAP.DE",
-                        1L,
-                        "Apex Brokers Inc",
-                        "EQUITY",
-                        "BUY",
-                        new BigDecimal("100.0000"),
-                        new BigDecimal("245.50"),
-                        LocalDate.now(),
-                        "PENDING",
-                        now,
-                        now));
+        when(tradeService.create(any(), any())).thenReturn(
+                buildTrade(42L, "TRD-20260315-9999", "PENDING", now));
 
         mockMvc.perform(post("/api/v1/trades")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -93,5 +82,24 @@ class TradeControllerWebMvcTest {
                 .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors
                         .csrf()))
                 .andExpect(status().isForbidden());
+    }
+
+    private Trade buildTrade(Long id, String tradeRef, String status, Instant timestamp) {
+        Instrument instrument = new Instrument();
+        Counterparty counterparty = new Counterparty();
+
+        Trade trade = new Trade();
+        //trade(id);
+        trade.setTradeRef(tradeRef);
+        trade.setInstrument(instrument);
+        trade.setCounterparty(counterparty);
+        trade.setAssetClass("EQUITY");
+        trade.setSide("BUY");
+        trade.setQuantity(new BigDecimal("100.0000"));
+        trade.setPrice(new BigDecimal("245.50"));
+        trade.setTradeDate(LocalDate.now());
+        trade.setStatus(status);
+        // createdAt/modifiedAt likely set by @PrePersist/auditing, not directly settable — check your entity
+        return trade;
     }
 }
