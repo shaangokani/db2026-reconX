@@ -3,6 +3,8 @@ package com.dbtraining.reconx.service;
 import com.dbtraining.reconx.exception.InvalidTradeException;
 import com.dbtraining.reconx.repository.InstrumentRepository;
 import com.dbtraining.reconx.repository.entity.Instrument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -21,10 +23,11 @@ public class InstrumentService {
 
     @Cacheable("instruments")
     public Instrument findBySymbol(String symbol) {
-        // TODO(TICKET-ADV081): return repo.findBySymbol(symbol)
+        // (TICKET-ADV081): return repo.findBySymbol(symbol)
         //   .orElseThrow(() -> new InvalidTradeException("Unknown instrument symbol: " + symbol)).
         //   The @Cacheable annotation above is what makes the second call cheap —
         //   verify the cache hit-rate via /actuator/caches once you wire this up.
-        throw new UnsupportedOperationException("TICKET-ADV081");
+        return repo.findBySymbol(symbol)
+                .orElseThrow(() -> new InvalidTradeException("Unknown instrument symbol: " + symbol));
     }
 }
