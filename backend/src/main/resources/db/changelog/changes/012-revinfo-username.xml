@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ============================================================================
+ TICKET-ADV071 — revinfo.username: who made each audited change
+ WHAT:    Adds a nullable username column to revinfo, populated by
+          CustomRevisionListener from the security context at commit time.
+ WHY:     The audit endpoint's "changedBy" field needs a real actor, not just
+          the revision number/timestamp DefaultRevisionEntity already gives us.
+ ============================================================================
+-->
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="012-revinfo-username" author="trainer">
+        <addColumn tableName="revinfo">
+            <column name="username" type="VARCHAR(120)"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="revinfo" columnName="username"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

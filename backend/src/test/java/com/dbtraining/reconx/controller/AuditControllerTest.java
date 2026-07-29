@@ -1,8 +1,10 @@
 package com.dbtraining.reconx.controller;
 
+import com.dbtraining.reconx.dto.TradeRevision;
+import com.dbtraining.reconx.dto.TradeSnapshot;
 import com.dbtraining.reconx.repository.AuditLogRepository;
-import com.dbtraining.reconx.repository.entity.AuditLogEntry;
 import com.dbtraining.reconx.security.JwtTokenProvider;
+import com.dbtraining.reconx.service.AuditService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -10,7 +12,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
@@ -27,30 +31,32 @@ class AuditControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
+    private AuditService auditService;
+
+    @MockBean
     private AuditLogRepository auditLogRepository;
 
     @MockBean
     private JwtTokenProvider jwtTokenProvider;
 
     @Test
-    void historyReturnsEntriesFromRepository() throws Exception {
-        AuditLogEntry entry = new AuditLogEntry(
-                "evt-1",
-                "TRD-20260315-0001",
-                "TRADE_CREATED",
-                Instant.parse("2026-03-15T10:00:00Z"),
-                "admin",
-                "{}",
-                "{}"
-        );
-        when(auditLogRepository.findByTradeRefOrderByEventTimestampAsc("TRD-20260315-0001"))
-                .thenReturn(List.of(entry));
+    void historyReturnsRevisionsFromAuditService() throws Exception {
+        TradeSnapshot snapshot = new TradeSnapshot(
+                1L, "TRD-20260315-0001", 1L, 1L,
+                "EQUITY", "BUY", BigDecimal.TEN, BigDecimal.valueOf(50.25),
+                LocalDate.parse("2026-03-15"), "PENDING", false);
+        TradeRevision revision = new TradeRevision(
+                1, Instant.parse("2026-03-15T10:00:00Z"), "ADD", "admin@db.com", snapshot);
+
+        when(auditService.findRevisions("TRD-20260315-0001"))
+                .thenReturn(List.of(revision));
 
         mockMvc.perform(get("/v1/audit/trades/TRD-20260315-0001")
                         .with(user("admin@db.com").roles("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0].tradeRef").value("TRD-20260315-0001"))
-                .andExpect(jsonPath("$[0].eventType").value("TRADE_CREATED"));
+                .andExpect(jsonPath("$[0].revisionType").value("ADD"))
+                .andExpect(jsonPath("$[0].changedBy").value("admin@db.com"))
+                .andExpect(jsonPath("$[0].snapshot.tradeRef").value("TRD-20260315-0001"));
     }
 }

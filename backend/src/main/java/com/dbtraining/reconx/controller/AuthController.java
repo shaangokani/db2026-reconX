@@ -2,7 +2,7 @@ package com.dbtraining.reconx.controller;
 
 import com.dbtraining.reconx.dto.LoginRequest;
 import com.dbtraining.reconx.dto.LoginResponse;
-import com.dbtraining.reconx.exception.InvalidTradeException;
+import com.dbtraining.reconx.exception.InvalidCredentialsException;
 import com.dbtraining.reconx.repository.AppUserRepository;
 import com.dbtraining.reconx.repository.entity.AppUser;
 import com.dbtraining.reconx.security.JwtTokenProvider;
@@ -32,10 +32,10 @@ public class AuthController {
     @Operation(summary = "Exchange email + password for a JWT")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest req) {
         AppUser user = users.findByEmail(req.email())
-                .orElseThrow(() -> new InvalidTradeException("Invalid credentials"));
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials"));
 
         if (!user.getEnabled() || !encoder.matches(req.password(), user.getPasswordHash())) {
-            throw new InvalidTradeException("Invalid credentials");
+            throw new InvalidCredentialsException("Invalid credentials");
         }
 
         String token = jwt.generate(user.getEmail(), user.getRole());

@@ -1,7 +1,9 @@
 package com.dbtraining.reconx.controller;
 
+import com.dbtraining.reconx.dto.TradeRevision;
 import com.dbtraining.reconx.repository.AuditLogRepository;
 import com.dbtraining.reconx.repository.entity.AuditLogEntry;
+import com.dbtraining.reconx.service.AuditService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,14 +21,18 @@ import java.util.List;
 @SecurityRequirement(name = "bearerAuth")
 public class AuditController {
 
+    private final AuditService auditService;
     private final AuditLogRepository auditRepo;
 
-    public AuditController(AuditLogRepository auditRepo) { this.auditRepo = auditRepo; }
+    public AuditController(AuditService auditService, AuditLogRepository auditRepo) {
+        this.auditService = auditService;
+        this.auditRepo = auditRepo;
+    }
 
     @GetMapping("/trades/{tradeRef}")
     @Operation(summary = "Get audit history for a trade (by tradeRef)")
-    public List<AuditLogEntry> history(@PathVariable String tradeRef) {
-        return auditRepo.findByTradeRefOrderByEventTimestampAsc(tradeRef);
+    public List<TradeRevision> history(@PathVariable String tradeRef) {
+        return auditService.findRevisions(tradeRef);
     }
 
     @GetMapping("/trades/{tradeRef}/events")

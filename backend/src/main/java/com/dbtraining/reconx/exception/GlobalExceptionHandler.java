@@ -54,6 +54,14 @@ public class GlobalExceptionHandler {
         return pd;
     }
 
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ProblemDetail invalidCredentials(InvalidCredentialsException ex) {
+        ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+        pd.setType(URI.create("https://reconx.dbtraining.com/errors/invalid-credentials"));
+        pd.setTitle("Invalid credentials");
+        return pd;
+    }
+
     @ExceptionHandler(ReconciliationMismatchException.class)
     public ProblemDetail mismatch(ReconciliationMismatchException ex) {
         // (TICKET-ADV062): map ReconciliationMismatchException -> HttpStatus.UNPROCESSABLE_ENTITY (422).
