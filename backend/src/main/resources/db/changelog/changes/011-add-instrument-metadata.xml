@@ -4,30 +4,11 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                             http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
 
-    <changeSet id="010-add-instrument-metadata" author="trainer">
-        <addColumn tableName="instruments">
-            <column name="metadata" type="jsonb" defaultValueComputed="'{}'::jsonb">
-                <constraints nullable="false"/>
-            </column>
-        </addColumn>
-    </changeSet>
-    <!--
-    add postgres option if this fails
-
-    <changeSet id="010-add-instrument-metadata-pg" author="trainer" dbms="postgresql">
-        <addColumn tableName="instruments">
-            <column name="metadata" type="jsonb" defaultValueComputed="'{}'::jsonb">
-                <constraints nullable="false"/>
-            </column>
-        </addColumn>
-    </changeSet>
-
-    <changeSet id="010-add-instrument-metadata-h2" author="trainer" dbms="h2">
+    <changeSet id="011-add-instrument-metadata" author="trainer" dbms="h2">
         <addColumn tableName="instruments">
             <column name="metadata" type="CLOB" defaultValue="{}">
                 <constraints nullable="false"/>
             </column>
         </addColumn>
     </changeSet>
-    -->
 </databaseChangeLog>

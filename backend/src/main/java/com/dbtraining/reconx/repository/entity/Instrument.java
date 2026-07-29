@@ -1,6 +1,6 @@
 package com.dbtraining.reconx.repository.entity;
 
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
 
@@ -37,7 +37,7 @@ public class Instrument {
      * On H2 (dev profile) this stores as a CLOB; on Postgres it's true JSONB
      * and is queryable via the @> operator.
      */
-    @Type(JsonBinaryType.class)
+    @Type(JsonType.class)
     @Column
     private Map<String, Object> metadata = new HashMap<>();
 

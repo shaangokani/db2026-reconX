@@ -83,6 +83,9 @@ public class TradeService {
         trade.setCounterparty(counterparty);
         trade.setQuantity(req.quantity());
         trade.setPrice(req.price());
+        trade.setAssetClass(req.assetClass());
+        trade.setSide(req.side());
+        trade.setTradeDate(req.tradeDate());
         trade.setStatus("PENDING");
 
         Trade saved = tradeRepo.save(trade);
@@ -94,21 +97,21 @@ public class TradeService {
         // (TICKET-ADV065): load by id (throw TradeNotFoundException if missing),
         //   copy mutable fields from req, save, publish a TRADE_UPDATED event.
         Trade trade = tradeRepo.findById(id)
-                .orElseThrow(() -> new TradeNotFoundException(
-                        "Trade not found: " + id));
+                .orElseThrow(() -> new TradeNotFoundException(req.tradeRef()));
 
         Instrument instrument = instRepo.findById(req.instrumentId())
-                .orElseThrow(() -> new TradeNotFoundException(
-                        "Instrument not found: " + req.instrumentId()));
+                .orElseThrow(() -> new TradeNotFoundException(req.instrumentId().toString()));
 
         Counterparty counterparty = cpRepo.findById(req.counterpartyId())
-                .orElseThrow(() -> new TradeNotFoundException(
-                        "Counterparty not found: " + req.counterpartyId()));
+                .orElseThrow(() -> new TradeNotFoundException(req.counterpartyId().toString()));
 
         trade.setInstrument(instrument);
         trade.setCounterparty(counterparty);
         trade.setQuantity(req.quantity());
         trade.setPrice(req.price());
+        trade.setAssetClass(req.assetClass());
+        trade.setSide(req.side());
+        trade.setTradeDate(req.tradeDate());
 
         Trade saved = tradeRepo.save(trade);
 
