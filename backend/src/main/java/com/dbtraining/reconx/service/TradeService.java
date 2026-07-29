@@ -8,6 +8,8 @@ import com.dbtraining.reconx.observability.TradeMetrics;
 import com.dbtraining.reconx.repository.CounterpartyRepository;
 import com.dbtraining.reconx.repository.InstrumentRepository;
 import com.dbtraining.reconx.repository.TradeRepository;
+import com.dbtraining.reconx.repository.entity.Counterparty;
+import com.dbtraining.reconx.repository.entity.Instrument;
 import com.dbtraining.reconx.repository.entity.Trade;
 import com.dbtraining.reconx.dto.TradeEvent;
 import org.springframework.data.domain.Page;
@@ -62,7 +64,30 @@ public class TradeService {
         //   save, then:
         //     - metrics.incrementTradeCreated() + metrics.recordTradeValue(qty*price) — TICKET-ADV083
         //     - events.publish(new TradeEvent(... TRADE_CREATED ... actor ...)) — TICKET-ADV129
-        throw new UnsupportedOperationException("TICKET-ADV064");
+
+        if (tradeRepo.findByTradeRef(req.tradeRef()).isPresent()) {
+            throw new DuplicateTradeRefException(req.tradeRef());
+        }
+
+        Instrument instrument = instRepo.findById(req.instrumentId())
+                .orElseThrow(() -> new TradeNotFoundException(
+                        "Instrument not found: " + req.instrumentId()));
+
+        Counterparty counterparty = cpRepo.findById(req.counterpartyId())
+                .orElseThrow(() -> new TradeNotFoundException(
+                        "Counterparty not found: " + req.counterpartyId()));
+
+        Trade trade = new Trade();
+        trade.setTradeRef(req.tradeRef());
+        trade.setInstrument(instrument);
+        trade.setCounterparty(counterparty);
+        trade.setQuantity(req.quantity());
+        trade.setPrice(req.price());
+        trade.setStatus("PENDING");
+
+        Trade saved = tradeRepo.save(trade);
+
+        return saved;
     }
 
     public Trade update(Long id, TradeRequest req, String actor) {
