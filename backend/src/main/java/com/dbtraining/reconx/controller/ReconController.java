@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -61,24 +62,35 @@ public class ReconController {
         List<TradeType> internal = trades
                 .findEquityTradesForReconciliation(req.from(), req.to(), req.counterpartyId())
                 .stream()
-                .<TradeType>map(ReconController::toEquityTrade)
+                .<TradeType>map(ReconController::toEquityTradeOrNull)
+                .filter(Objects::nonNull)
                 .toList();
         engine.reconcile(internal, internal, ReconciliationRule.EXACT);
 
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of("jobId", jobId, "status", "QUEUED"));
     }
 
-    private static EquityTrade toEquityTrade(Trade t) {
-        return EquityTrade.builder()
-                .tradeRef(TradeRef.of(t.getTradeRef()))
-                .instrumentSymbol(t.getInstrument().getSymbol())
-                .quantity(t.getQuantity())
-                .price(t.getPrice())
-                .currency(t.getInstrument().getCurrency())
-                .side(Side.valueOf(t.getSide()))
-                .tradeDate(t.getTradeDate())
-                .counterpartyId(t.getCounterparty().getId())
-                .build();
+    /**
+     * Rows inserted outside the API (seed data, manual SQL) can carry a
+     * tradeRef/side/quantity that never passed TradeRequest's validation, so
+     * they can't always become a valid domain TradeType. Skip those rather
+     * than fail the whole reconciliation run over one unreconcilable row.
+     */
+    private static EquityTrade toEquityTradeOrNull(Trade t) {
+        try {
+            return EquityTrade.builder()
+                    .tradeRef(TradeRef.of(t.getTradeRef()))
+                    .instrumentSymbol(t.getInstrument().getSymbol())
+                    .quantity(t.getQuantity())
+                    .price(t.getPrice())
+                    .currency(t.getInstrument().getCurrency())
+                    .side(Side.valueOf(t.getSide()))
+                    .tradeDate(t.getTradeDate())
+                    .counterpartyId(t.getCounterparty().getId())
+                    .build();
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            return null;
+        }
     }
 
     @GetMapping("/jobs/{jobId}/results")
