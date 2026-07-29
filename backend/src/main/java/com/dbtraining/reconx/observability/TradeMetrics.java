@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * ============================================================================
- * TICKET-ADV083 — trade_created_total Counter
+ * TICKET-ADV083 — trade_creation_total Counter
  * TICKET-ADV085 — recon_break_count Gauge (polled — wraps repo.countByStatus)
  * TICKET-ADV086 — trade_value_total DistributionSummary
  *
@@ -42,7 +42,11 @@ public class TradeMetrics {
     private final DistributionSummary tradeValue;
 
     public TradeMetrics(MeterRegistry registry, ReconBreakRepository breakRepo) {
-        this.tradeCreated = Counter.builder("trade_created_total")
+        // Named "_creation_total", not "_created_total": the Prometheus client's
+        // naming layer treats a literal "_created" suffix as the reserved
+        // OpenMetrics counter-creation-timestamp series and strips it (along with
+        // "_total"), collapsing the exposed name to "trade_total".
+        this.tradeCreated = Counter.builder("trade_creation_total")
                 .description("Total trades created")
                 .register(registry);
 
@@ -59,7 +63,7 @@ public class TradeMetrics {
     }
 
     public void incrementTradeCreated() {
-        // TODO(TICKET-ADV083): increment the tradeCreated counter.
+        tradeCreated.increment();
     }
 
     public void recordTradeValue(double value) {
