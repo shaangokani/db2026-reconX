@@ -161,7 +161,17 @@ public class TradeService {
         Specification<Trade> spec = Specification
                 .where(tradeDateBetween(from, to))
                 .and(hasStatus(status))
-                .and(hasCounterparty(counterpartyId));
+                .and(hasCounterparty(counterpartyId))
+                .and((root, query, cb) -> {
+                    // open-in-view is disabled, so instrument/counterparty (both LAZY) must be
+                    // fetch-joined here or TradeMapper throws LazyInitializationException once
+                    // this transaction/session closes. Skip on the COUNT query used for paging.
+                    if (query.getResultType() != Long.class && query.getResultType() != long.class) {
+                        root.fetch("instrument", jakarta.persistence.criteria.JoinType.LEFT);
+                        root.fetch("counterparty", jakarta.persistence.criteria.JoinType.LEFT);
+                    }
+                    return cb.conjunction();
+                });
         return tradeRepo.findAll(spec, pageable);
     }
 }
