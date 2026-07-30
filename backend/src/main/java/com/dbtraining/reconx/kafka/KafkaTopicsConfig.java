@@ -25,7 +25,7 @@ import org.springframework.kafka.config.TopicBuilder;
  * ============================================================================
  */
 @Configuration
-//@Profile("!dev & !test")
+@Profile("!dev & !test")
 public class KafkaTopicsConfig {
 
     public static final String TRADE_EVENTS = "trade-events";
