@@ -3,6 +3,7 @@ package com.dbtraining.reconx.controller;
 import com.dbtraining.reconx.dto.TradeMapper;
 import com.dbtraining.reconx.dto.TradeResponse;
 import com.dbtraining.reconx.repository.entity.Trade;
+import com.dbtraining.reconx.security.JwtTokenProvider;
 import com.dbtraining.reconx.security.SecurityConfig;
 import com.dbtraining.reconx.service.TradeService;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -42,7 +44,11 @@ class TradeControllerTest {
     @MockBean
     private TradeMapper mapper;
 
+    @MockBean
+    private JwtTokenProvider jwtTokenProvider;
+
     @Test
+    @WithMockUser(roles = "TRADER")
     void listReturnsStablePagedEnvelopeAndBindsPageable() throws Exception {
         Trade trade = new Trade();
         TradeResponse response = new TradeResponse(

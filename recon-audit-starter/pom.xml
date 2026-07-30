@@ -8,9 +8,9 @@
         <version>4.1.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.dbtraining</groupId>
+    <groupId>com.dbtraining.reconx</groupId>
     <artifactId>recon-audit-starter</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>recon-audit-starter</name>
     <description>recon-audit-starter</description>
     <url/>

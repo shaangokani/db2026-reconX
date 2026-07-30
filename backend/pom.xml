@@ -122,6 +122,11 @@
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.dbtraining.reconx</groupId>
+            <artifactId>recon-audit-starter</artifactId>
+            <version>1.0.0</version>
+        </dependency>
         <!-- Required for @Timed (TICKET-ADV084) to actually proxy anything —
              not pulled in transitively by the actuator starter. -->
         <dependency>
