@@ -5,6 +5,7 @@ import com.dbtraining.reconx.dto.TradeSnapshot;
 import com.dbtraining.reconx.repository.AuditLogRepository;
 import com.dbtraining.reconx.security.JwtTokenProvider;
 import com.dbtraining.reconx.service.AuditService;
+import com.dbtraining.reconx.service.TradeAggregator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -39,6 +40,9 @@ class AuditControllerTest {
 
     @MockBean
     private JwtTokenProvider jwtTokenProvider;
+
+    @MockBean
+    private TradeAggregator tradeAggregator;
 
     @Test
     @WithMockUser(roles = "TRADER")
