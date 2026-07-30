@@ -45,8 +45,13 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      # TICKET-ADV145 — Kafka 3.x already defaults to these when unset; making
+      # them explicit pins the guarantee against a future client-default change
+      # rather than relying on an implicit default.
+      acks: all
       properties:
         spring.json.add.type.headers: false
+        enable.idempotence: true
     consumer:
       group-id: reconx-service
       auto-offset-reset: earliest
