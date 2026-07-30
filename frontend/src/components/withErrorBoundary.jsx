@@ -18,10 +18,12 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.error) {
       return (
-        <div role="alert" className="error-fallback">
+        <div role="alert" className="error-boundary-fallback" style={{ padding: '2rem', textAlign: 'center', color: 'inherit' }}>
           <h2>Something went wrong</h2>
           <pre>{String(this.state.error.message || this.state.error)}</pre>
-          <button onClick={() => this.setState({ error: null })}>Try again</button>
+          <button onClick={() => this.setState({ error: null })} style={{ marginTop: '1rem', padding: '0.5rem 1rem' }}>
+            Try again
+          </button>
         </div>
       );
     }
