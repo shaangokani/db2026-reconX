@@ -3,6 +3,7 @@ import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import { withErrorBoundary } from '@components/withErrorBoundary.jsx';
 import { useTheme } from '@context/ThemeContext.jsx';
+import { useAuth } from '@context/AuthContext.jsx';
 
 const Dashboard = lazy(() => import('@pages/Dashboard.jsx'));
 const Trades    = lazy(() => import('@pages/Trades.jsx'));
@@ -11,20 +12,31 @@ const Login     = lazy(() => import('@pages/Login.jsx'));
 
 function App() {
   const { theme, toggle } = useTheme();
+  const { user } = useAuth();
 
   return (
     <div className="layout">
-      <header className="layout__header">
-        <h1>ReconX</h1>
-        <nav className="layout__nav">
-          <Link to="/">Dashboard</Link>
-          <Link to="/trades">Trades</Link>
-          <Link to="/trades/new">Add trade</Link>
-          <button onClick={toggle} aria-label="Toggle theme" style={{ marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}>
-            {theme === 'light' ? '🌙' : '☀️'}
-          </button>
-        </nav>
-      </header>
+      {user && (
+        <header className="layout__header">
+          <h1>ReconX</h1>
+          <nav className="layout__nav">
+            <Link to="/">Dashboard</Link>
+            <Link to="/trades">Trades</Link>
+            <Link to="/trades/new">Add trade</Link>
+            <button 
+              role="switch" 
+              aria-checked={theme === 'dark'} 
+              className="theme-switch" 
+              onClick={toggle} 
+              aria-label="Toggle dark mode"
+            >
+              <span className="theme-switch__thumb">
+                {theme === 'dark' ? '🌙' : '☀️'}
+              </span>
+            </button>
+          </nav>
+        </header>
+      )}
       <main className="layout__main">
         <Suspense fallback={<div className="loader">Loading…</div>}>
           <Routes>

@@ -29,9 +29,11 @@ export default function Login() {
   }
 
   return (
-    <form onSubmit={submit} className="login-form">
-      <h2>Sign in</h2>
-      <label>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', marginTop: '10vh' }}>
+      <h1 style={{ fontSize: '3rem', margin: 0, background: 'linear-gradient(135deg, var(--color-primary), var(--color-success))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>ReconX</h1>
+      <form onSubmit={submit} className="login-form">
+        <h2>Sign in</h2>
+        <label>
         Email
         <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required />
       </label>
@@ -42,5 +44,6 @@ export default function Login() {
       {error && <div role="alert" className="form-error">{error}</div>}
       <button type="submit">Sign in</button>
     </form>
+    </div>
   );
 }
