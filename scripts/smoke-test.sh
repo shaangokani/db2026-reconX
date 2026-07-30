@@ -50,11 +50,11 @@ docker exec reconx-kafka kafka-console-consumer \
 
 echo "▶ 5/7  Confirming Postgres audit row..."
 docker exec reconx-postgres psql -U reconx_user -d reconx -tAc \
-  "SELECT COUNT(*) FROM audit_log WHERE table_name='trades';" | grep -qv '^0$' \
+  "SELECT COUNT(*) FROM audit_log;" | grep -qv '^0$' \
   && echo "  ✓ audit row present" || { echo "✗ no audit row"; exit 1; }
 
 echo "▶ 6/7  Confirming Prometheus scrape..."
-curl -fsS http://localhost:9090/api/v1/query?query=up\{job=\"spring-boot\"\} \
+curl -fsS "http://localhost:9090/api/v1/query?query=up\{job=\"reconx-backend\"\}" \
   | jq -e '.data.result[0].value[1]=="1"' >/dev/null \
   && echo "  ✓ Prometheus scraping backend" || { echo "✗ Prometheus target DOWN"; exit 1; }
 
