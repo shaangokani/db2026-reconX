@@ -29,5 +29,6 @@
     <include file="changes/010-create-trades-aud.xml" relativeToChangelogFile="true"/>
     <include file="changes/011-add-instrument-metadata.xml" relativeToChangelogFile="true"/>
     <include file="changes/012-revinfo-username.xml" relativeToChangelogFile="true"/>
+    <include file="changes/013-dlq-messages.xml"  relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
