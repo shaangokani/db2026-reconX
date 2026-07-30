@@ -7,8 +7,15 @@
 
 FROM eclipse-temurin:25-jdk AS build
 WORKDIR /workspace
+
 COPY pom.xml mvnw ./
 COPY .mvn .mvn
+
+COPY recon-audit-starter ./recon-audit-starter
+WORKDIR /workspace/recon-audit-starter
+RUN ../mvnw -q -B clean install
+
+WORKDIR /workspace/backend
 RUN ./mvnw -q -B dependency:go-offline || true
 COPY src src
 RUN ./mvnw -q -B -DskipTests package && \
