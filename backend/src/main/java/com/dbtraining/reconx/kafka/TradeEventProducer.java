@@ -19,14 +19,6 @@ import org.springframework.stereotype.Component;
  * OBSERVE: Kafdrop -> `trade-events` shows one message per published event,
  *          partitioned by tradeRef.
  * ============================================================================
- *
- *  TODO(TICKET-ADV129):
- *    public void publish(TradeEvent event) {
- *        log.debug("Publishing TradeEvent eventId={} ref={} type={}",
- *                  event.eventId(), event.tradeRef(), event.eventType());
- *        template.send(TOPIC, event.tradeRef(), event);
- *    }
- *
  *  GOTCHA: NEVER let a Kafka publish failure roll back the DB transaction.
  *          Publish AFTER commit (use TransactionSynchronizationManager or
  *          @TransactionalEventListener), or accept eventual consistency.
@@ -45,6 +37,8 @@ public class TradeEventProducer {
     }
 
     public void publish(TradeEvent event) {
-        throw new UnsupportedOperationException("TICKET-ADV129");
+        log.debug("Publishing TradeEvent eventId={} ref={} type={}",
+                event.eventId(), event.tradeRef(), event.eventType());
+        template.send(TOPIC, event.tradeRef(), event);
     }
 }
