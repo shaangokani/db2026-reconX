@@ -1,9 +1,12 @@
 package com.dbtraining.reconx.service;
 
 import com.dbtraining.reconx.dto.ReconResult;
+import com.dbtraining.reconx.dto.TradeEvent;
 import com.dbtraining.reconx.model.ReconciliationRule;
 import com.dbtraining.reconx.model.TradeType;
 import io.micrometer.core.annotation.Timed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -37,6 +40,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class ReconciliationEngine {
+
+    private static final Logger log = LoggerFactory.getLogger(ReconciliationEngine.class);
 
     private final ExecutorService executor;
 
@@ -113,6 +118,24 @@ public class ReconciliationEngine {
             case com.dbtraining.reconx.model.BondTrade b       -> new BigDecimal[]{b.couponRate(), b.faceValue()};
             case com.dbtraining.reconx.model.DerivativeTrade d -> new BigDecimal[]{d.strike(), d.quantity()};
         };
+    }
+
+    /**
+     * TICKET-ADV131 — Trainer copy stub.
+     * Logs the trigger so students can trace the flow end-to-end.
+     */
+    public void scheduleRecon(TradeEvent event) {
+        log.info("Engine scheduling recon job for tradeRef={}", event.tradeRef());
+        // In a full implementation, push a row to recon_jobs table
+    }
+
+    /**
+     * TICKET-ADV131 — Trainer copy stub.
+     * Logs the cancellation so students can trace the flow end-to-end.
+     */
+    public void cancelPendingRecon(TradeEvent event) {
+        log.info("Engine cancelling pending recon job for tradeRef={}", event.tradeRef());
+        // In a full implementation, remove or update row in recon_jobs table
     }
 
     public void shutdown() {

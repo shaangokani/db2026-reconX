@@ -46,3 +46,37 @@ ab -n 100 -c 10 \
 -T application/json \
 -p trade.json \
 http://localhost:8080/api/v1/trades
+
+### TEST KAFKA
+```bash
+curl -i -X POST http://localhost:8080/api/v1/trades \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tradeRef": "TRD-20260730-1001",
+    "instrumentId": 1,
+    "counterpartyId": 1,
+    "assetClass": "EQUITY",
+    "side": "SELL",
+    "quantity": 500.0,
+    "price": 150.25,
+    "tradeDate": "2026-07-30"
+  }'
+```
+
+Test to receive 400
+```bash
+curl -i -X POST http://localhost:8080/api/v1/trades \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tradeRef": "",
+    "instrumentId": 1,
+    "counterpartyId": 1,
+    "assetClass": "EQUITY",
+    "side": "BUY",
+    "quantity": 100.0,
+    "price": 245.50,
+    "tradeDate": "2026-07-30"
+  }'
+```
