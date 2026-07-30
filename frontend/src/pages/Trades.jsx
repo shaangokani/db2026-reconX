@@ -1,9 +1,10 @@
 // TICKET-ADV114 — Compound DataTable.
 // TICKET-ADV117 — useDebouncedSearch.
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { withAuth } from '@components/withAuth.jsx';
 import DataTable from '@components/DataTable.jsx';
 import { useDebouncedSearch } from '@hooks/useDebouncedSearch.js';
+import { TradeRow } from '@components/TradeRow.jsx';
 import { api } from '@services/apiService.js';
 
 function Trades() {
@@ -11,6 +12,13 @@ function Trades() {
   const debounced = useDebouncedSearch(search, 300);
   const [page, setPage] = useState(0);
   const [data, setData] = useState({ items: [], totalPages: 0 });
+  const [selectedId, setSelectedId] = useState(null);
+
+  // TICKET-ADV121: useCallback to prevent unnecessary re-renders of TradeRow
+  const handleSelect = useCallback((id) => {
+    setSelectedId(id);
+    console.log("Selected trade:", id);
+  }, []);
 
   // TODO(TICKET-ADV114 + ADV117): useEffect that:
   //   - builds a query string from `page` and `debounced` (status filter)
@@ -35,8 +43,12 @@ function Trades() {
           { key: 'price',    label: 'Price' },
           { key: 'status',   label: 'Status' },
         ]} />
-        {/* TODO(TICKET-ADV114): render a DataTable.Body with `rows={data.items}`
-            and a `render` prop that returns one <span> per column. */}
+        <DataTable.Body
+          rows={data.items}
+          render={(t) => (
+            <TradeRow key={t.id} trade={t} onClick={handleSelect} />
+          )}
+        />
         <DataTable.Pagination
           page={page}
           totalPages={Math.max(1, data.totalPages)}
