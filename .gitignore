@@ -28,3 +28,5 @@ replay_pid*
 
 target/
 .idea
+
+frontend/node_modules
