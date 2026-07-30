@@ -1,6 +1,6 @@
 // TICKET-ADV114 — Compound DataTable.
 // TICKET-ADV117 — useDebouncedSearch.
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { withAuth } from '@components/withAuth.jsx';
 import DataTable from '@components/DataTable.jsx';
 import { useDebouncedSearch } from '@hooks/useDebouncedSearch.js';
@@ -20,11 +20,34 @@ function Trades() {
     console.log("Selected trade:", id);
   }, []);
 
-  // TODO(TICKET-ADV114 + ADV117): useEffect that:
-  //   - builds a query string from `page` and `debounced` (status filter)
-  //   - calls api.listTrades(params) and stores the response in `data`
-  //   - re-runs whenever `page` or `debounced` changes
-  //   - degrades gracefully on error (set empty page).
+  useEffect(() => {
+    let cancelled = false;
+    const params = new URLSearchParams({ page: String(page) });
+    if (debounced) params.set('status', debounced);
+
+    api.listTrades(`?${params.toString()}`)
+      .then((res) => {
+        if (cancelled) return;
+        setData({
+          // TradeRow/Dashboard both expect {symbol, qty}; the REST DTO
+          // returns instrumentSymbol/quantity — map at the boundary.
+          items: res.items.map((t) => ({
+            id: t.id,
+            tradeRef: t.tradeRef,
+            symbol: t.instrumentSymbol,
+            qty: t.quantity,
+            price: t.price,
+            status: t.status,
+          })),
+          totalPages: res.totalPages,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setData({ items: [], totalPages: 0 });
+      });
+
+    return () => { cancelled = true; };
+  }, [page, debounced]);
 
   return (
     <section>

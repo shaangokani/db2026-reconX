@@ -34,31 +34,30 @@ export const api = {
     return request('POST', '/auth/login', { email, password });
   },
   listTrades: (params = '')  => {
-    // TODO(TICKET-ADV114): GET /v1/trades + `params` query string.
-    throw new Error('TICKET-ADV114 not implemented');
+    return request('GET', `/v1/trades${params}`);
   },
   createTrade: (req)         => {
-    // TODO(TICKET-ADV123): POST /v1/trades with the form payload.
-    throw new Error('TICKET-ADV123 not implemented');
+    // yup's date() schema casts the <input type="date"> string into a real
+    // Date on validation; the backend's tradeDate is a plain LocalDate and
+    // expects yyyy-MM-dd, not a full ISO instant string.
+    const tradeDate = req.tradeDate instanceof Date
+      ? req.tradeDate.toISOString().slice(0, 10)
+      : req.tradeDate;
+    return request('POST', '/v1/trades', { ...req, tradeDate });
   },
   updateStatus: (id, status) => {
-    // TODO(TICKET-ADV119): PATCH /v1/trades/{id}/status with { status }.
-    throw new Error('TICKET-ADV119 not implemented');
+    return request('PATCH', `/v1/trades/${id}/status`, { status });
   },
   deleteTrade: (id)          => {
-    // TODO(TICKET-ADV119): DELETE /v1/trades/{id}.
-    throw new Error('TICKET-ADV119 not implemented');
+    return request('DELETE', `/v1/trades/${id}`);
   },
   runRecon: (req)            => {
-    // TODO(TICKET-ADV121): POST /v1/recon/run to enqueue a recon job.
-    throw new Error('TICKET-ADV121 not implemented');
+    return request('POST', '/v1/recon/run', req);
   },
   reconResults: (jobId)      => {
-    // TODO(TICKET-ADV121): GET /v1/recon/jobs/{jobId}/results.
-    throw new Error('TICKET-ADV121 not implemented');
+    return request('GET', `/v1/recon/jobs/${jobId}/results`);
   },
   audit: (tradeRef)          => {
-    // TODO(TICKET-ADV121): GET /v1/audit/trades/{tradeRef}.
-    throw new Error('TICKET-ADV121 not implemented');
+    return request('GET', `/v1/audit/trades/${tradeRef}`);
   },
 };
