@@ -93,6 +93,16 @@ public class TradeService {
         metrics.incrementTradeCreated();
         metrics.recordTradeValue(saved.getQuantity().multiply(saved.getPrice()).doubleValue());
 
+        events.publish(new TradeEvent(
+                UUID.randomUUID(),
+                saved.getTradeRef(),
+                TradeEvent.EventType.TRADE_CREATED,
+                Instant.now(),
+                actor,
+                null,
+                "PENDING"
+        ));
+
         return saved;
     }
 
@@ -118,6 +128,16 @@ public class TradeService {
 
         Trade saved = tradeRepo.save(trade);
 
+        events.publish(new TradeEvent(
+                UUID.randomUUID(),
+                saved.getTradeRef(),
+                TradeEvent.EventType.TRADE_UPDATED,
+                Instant.now(),
+                actor,
+                null,
+                null
+        ));
+
         return saved;
     }
 
@@ -132,7 +152,7 @@ public class TradeService {
         trade.setStatus(status);
         Trade saved = tradeRepo.save(trade);
 
-        /*events.publish(new TradeEvent(
+        events.publish(new TradeEvent(
                 UUID.randomUUID(),
                 saved.getTradeRef(),
                 TradeEvent.EventType.TRADE_UPDATED,
@@ -141,7 +161,7 @@ public class TradeService {
                 previousStatus,
                 status
         ));
-*/
+
         return saved;
     }
 
@@ -152,8 +172,16 @@ public class TradeService {
                 .orElseThrow(() -> new TradeNotFoundException(id.toString()));
         t.softDelete();
         tradeRepo.save(t);
-        //events.publish(new TradeEvent(UUID.randomUUID(), t.getTradeRef(),
-        //        TradeEvent.EventType.TRADE_CANCELLED, Instant.now(), actor, null, null));
+
+        events.publish(new TradeEvent(
+                UUID.randomUUID(),
+                t.getTradeRef(),
+                TradeEvent.EventType.TRADE_CANCELLED,
+                Instant.now(),
+                actor,
+                null,
+                null
+        ));
     }
 
     @Transactional(readOnly = true)
