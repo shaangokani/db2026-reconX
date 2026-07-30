@@ -39,3 +39,10 @@ curl -i -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/v1/instrumen
 curl -s -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/actuator/prometheus | grep '^cache_'
 
 curl -s -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/actuator/prometheus | grep trades_by_status
+
+# Apache Bench: 100 total requests, 10 concurrent
+ab -n 100 -c 10 \
+-H "Authorization: Bearer $TOKEN" \
+-T application/json \
+-p trade.json \
+http://localhost:8080/api/v1/trades

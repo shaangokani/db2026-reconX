@@ -1,0 +1,8 @@
+{
+  "tradeRef": "PERF-001",
+  "instrumentSymbol": "SAP.DE",
+  "counterpartyId": 1,
+  "quantity": 100,
+  "price": 245.5,
+  "tradeDate": "2026-06-02"
+}

@@ -1,0 +1,51 @@
+db2026-reconX git:(main) ✗ ab -n 100 -c 10 \
+   -H "Authorization: Bearer $TOKEN" \
+   -T application/json \
+   -p trade.json \
+   http://localhost:8080/api/v1/trades
+This is ApacheBench, Version 2.3 <$Revision: 1923142 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking localhost (be patient).....done
+
+
+Server Software:
+Server Hostname:        localhost
+Server Port:            8080
+
+Document Path:          /api/v1/trades
+Document Length:        238 bytes
+
+Concurrency Level:      10
+Time taken for tests:   0.150 seconds
+Complete requests:      100
+Failed requests:        0
+Non-2xx responses:      100
+Total transferred:      49800 bytes
+Total body sent:        50200
+HTML transferred:       23800 bytes
+Requests per second:    667.69 [#/sec] (mean)
+Time per request:       14.977 [ms] (mean)
+Time per request:       1.498 [ms] (mean, across all concurrent requests)
+Transfer rate:          324.71 [Kbytes/sec] received
+                        327.32 kb/s sent
+                        652.04 kb/s total
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.2      0       1
+Processing:     2    7   9.9      4      91
+Waiting:        2    5   9.2      3      89
+Total:          2    7   9.8      4      91
+
+Percentage of the requests served within a certain time (ms)
+  50%      4
+  66%      5
+  75%      6
+  80%      7
+  90%     18
+  95%     20
+  98%     21
+  99%     91
+ 100%     91 (longest request)
