@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trades</title>
+    <script>
+      (function () {
+        var savedTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.dataset.theme = savedTheme;
+      })();
+    </script>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="layout__header" role="banner">
+      <h1 class="layout__title">Trades</h1>
+      <nav class="layout__nav" aria-label="Main navigation">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="trades.html" class="active">Trades</a>
+      </nav>
+      <button id="theme-toggle" aria-label="Toggle light/dark theme">🌗</button>
+    </header>
+    <main class="layout__main" role="main">
+      <section aria-labelledby="trades-table">
+        <h2 id="trades-table">Trades</h2>
+        <div class="table-scroll">
+          <table class="data-table" id="trades-table">
+            <thead>
+              <tr>
+                <th data-col="tradeRef" data-dir="asc">
+                  Trade Ref <span class="resize-handle"></span>
+                </th>
+                <th data-col="symbol" data-dir="asc">
+                  Instrument <span class="resize-handle"></span>
+                </th>
+                <th data-col="quantity" data-dir="asc" data-type="number">
+                  Quantity <span class="resize-handle"></span>
+                </th>
+                <th data-col="price" data-dir="asc" data-type="number">
+                  Price <span class="resize-handle"></span>
+                </th>
+                <th data-col="status" data-dir="asc">
+                  Status <span class="resize-handle"></span>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="trades-tbody">
+              <!-- rows injected by JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <script src="js/theme.js"></script>
+  </body>
+</html>
