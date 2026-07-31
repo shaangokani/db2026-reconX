@@ -60,4 +60,19 @@ export const api = {
   audit: (tradeRef)          => {
     return request('GET', `/v1/audit/trades/${tradeRef}`);
   },
+  listAuditEvents: (tradeRef) => {
+    return request('GET', `/v1/audit/trades/${tradeRef}/events`);
+  },
+  listReconBreaks: () => {
+    return request('GET', '/v1/recon/jobs/latest/results');
+  },
+  resolveReconBreak: (id, note) => {
+    return request('PUT', `/v1/recon/results/${id}/resolve`, { note });
+  },
+  listDlq: () => {
+    return request('GET', '/v1/admin/dlq');
+  },
+  replayDlq: (eventId) => {
+    return request('POST', `/v1/admin/dlq/replay?eventId=${eventId}`);
+  },
 };

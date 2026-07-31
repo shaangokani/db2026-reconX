@@ -138,46 +138,70 @@ body {
 /* Layout */
 .layout { 
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   min-height: 100vh; 
 }
 
-/* Glassmorphism Header */
-.layout__header { 
+/* Glassmorphism Sidebar */
+.layout__sidebar { 
   display: flex; 
-  align-items: center; 
-  gap: var(--space-4); 
-  padding: 0 var(--space-5);
-  height: 56px;
-  background: hsla(222, 47%, 11%, 0.8);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  flex-direction: column;
+  width: 260px;
+  padding: var(--space-5);
+  background: hsla(222, 47%, 11%, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   color: #fff; 
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
   position: sticky;
   top: 0;
+  height: 100vh;
   z-index: 50;
+  box-shadow: 4px 0 24px var(--color-shadow);
 }
 
-[data-theme="dark"] .layout__header {
-  background: hsla(222, 47%, 8%, 0.8);
-  border-bottom: 1px solid var(--color-border);
+[data-theme="dark"] .layout__sidebar {
+  background: hsla(222, 47%, 8%, 0.95);
+  border-right: 1px solid var(--color-border);
 }
 
-.layout__nav    { display: flex; gap: var(--space-4); margin-left: auto; align-items: center; }
+.layout__sidebar h1 {
+  font-size: 2rem;
+  margin: 0 0 var(--space-5) 0;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-success));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.layout__nav { 
+  display: flex; 
+  flex-direction: column;
+  gap: var(--space-2); 
+  flex: 1;
+}
 .layout__nav a  { 
   color: hsla(0, 0%, 100%, 0.7); 
   text-decoration: none; 
   font-weight: 500;
   transition: var(--transition);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-3);
   border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 .layout__nav a:hover { 
   color: #fff;
   background: hsla(255, 255, 255, 0.1);
+  transform: translateX(4px);
 }
-.layout__main   { padding: var(--space-5); max-width: 1400px; margin: 0 auto; width: 100%; }
+.layout__main   { 
+  flex: 1;
+  padding: var(--space-5); 
+  max-width: calc(100vw - 260px); 
+  margin: 0 auto; 
+  width: 100%; 
+}
 
 .loader { padding: var(--space-5); color: var(--color-text-muted); display: flex; justify-content: center; font-weight: 500;}
 
@@ -403,7 +427,7 @@ button:disabled {
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 2px;
   transition: var(--transition);
-  margin-left: auto;
+  margin-top: auto;
 }
 
 .theme-switch:hover {
