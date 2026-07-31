@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '@services/apiService.js';
+import { withAuth } from '@components/withAuth.jsx';
 
-export default function DlqAdmin() {
+function DlqAdmin() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -87,3 +88,5 @@ export default function DlqAdmin() {
     </div>
   );
 }
+
+export default withAuth(DlqAdmin);

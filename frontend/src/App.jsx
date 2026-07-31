@@ -15,7 +15,7 @@ const DlqAdmin    = lazy(() => import('@pages/DlqAdmin.jsx'));
 
 function App() {
   const { theme, toggle } = useTheme();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   return (
     <div className="layout">
@@ -39,6 +39,9 @@ function App() {
               <span className="theme-switch__thumb">
                 {theme === 'dark' ? '🌙' : '☀️'}
               </span>
+            </button>
+            <button type="button" className="nav__signout" onClick={logout}>
+              Sign out{user.role ? ` (${user.role})` : ''}
             </button>
           </nav>
         </aside>

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { api } from '@services/apiService.js';
-import { useAuth } from '@context/AuthContext.jsx';
+import { withAuth } from '@components/withAuth.jsx';
 
-export default function AuditLog() {
+function AuditLog() {
   const [tradeRef, setTradeRef] = useState('');
   const [events, setEvents] = useState([]);
   const [error, setError] = useState(null);
@@ -74,3 +74,5 @@ export default function AuditLog() {
     </div>
   );
 }
+
+export default withAuth(AuditLog);

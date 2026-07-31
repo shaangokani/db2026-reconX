@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '@services/apiService.js';
+import { withAuth } from '@components/withAuth.jsx';
 
-export default function ReconBreaks() {
+function ReconBreaks() {
   const [breaks, setBreaks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -102,3 +103,5 @@ export default function ReconBreaks() {
     </div>
   );
 }
+
+export default withAuth(ReconBreaks);
