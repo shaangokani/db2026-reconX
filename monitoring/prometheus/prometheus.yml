@@ -11,7 +11,14 @@ scrape_configs:
   - job_name: 'reconx-backend'
     metrics_path: '/api/actuator/prometheus'
     static_configs:
-      - targets: ['backend:8080']
+      # host.docker.internal, not the 'backend' compose service name: the usual
+      # dev loop runs the backend on the host via `./mvnw spring-boot:run`, and
+      # 'backend' only resolves when the backend itself is containerised — so
+      # that target silently stayed down and every Grafana panel was empty.
+      # This address covers both setups, since the backend container also
+      # publishes 8080 on the host. Linux needs the extra_hosts mapping added
+      # to the prometheus service in docker-compose.yml.
+      - targets: ['host.docker.internal:8080']
 
   - job_name: 'prometheus'
     static_configs:
