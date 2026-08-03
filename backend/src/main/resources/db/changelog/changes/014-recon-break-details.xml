@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ============================================================================
+ recon_breaks.details — the human-readable reason a break was raised
+ (e.g. "internal=227.50/100 external=231.10/100"). ReconResult already
+ carries this from the engine; without a column to store it the Recon Breaks
+ page had nothing to show in its Details column.
+ ============================================================================
+-->
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+
+    <changeSet id="014-add-recon-break-details" author="trainer">
+        <addColumn tableName="recon_breaks">
+            <column name="details" type="VARCHAR(500)"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="recon_breaks" columnName="details"/>
+        </rollback>
+    </changeSet>
+
+    <!-- The break seeded by 008 predates this column, so it would render with an
+         empty Details cell. Give it the same shape of explanation the engine
+         writes for breaks it raises itself. -->
+    <changeSet id="014-backfill-seeded-break-details" author="trainer">
+        <update tableName="recon_breaks">
+            <column name="details" value="seeded example break — counterparty price differs from the internal book"/>
+            <where>details IS NULL</where>
+        </update>
+        <rollback/>
+    </changeSet>
+
+</databaseChangeLog>

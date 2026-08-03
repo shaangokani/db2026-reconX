@@ -73,7 +73,7 @@ function ReconBreaks() {
               <div style={{ fontWeight: 600 }}>{b.tradeRef}</div>
               <div>
                 <span style={{ padding: '4px 8px', background: 'var(--color-warning)', color: '#000', borderRadius: '4px', fontSize: '0.8em', fontWeight: 600 }}>
-                  {b.breakType}
+                  {b.discrepancyType}
                 </span>
               </div>
               <div>

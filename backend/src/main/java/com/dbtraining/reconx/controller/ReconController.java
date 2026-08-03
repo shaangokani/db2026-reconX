@@ -1,5 +1,7 @@
 package com.dbtraining.reconx.controller;
 
+import com.dbtraining.reconx.dto.ReconBreakResponse;
+import com.dbtraining.reconx.dto.ReconResult;
 import com.dbtraining.reconx.dto.ReconRunRequest;
 import com.dbtraining.reconx.exception.TradeNotFoundException;
 import com.dbtraining.reconx.model.EquityTrade;
@@ -12,6 +14,7 @@ import com.dbtraining.reconx.repository.TradeRepository;
 import com.dbtraining.reconx.repository.entity.ReconBreak;
 import com.dbtraining.reconx.repository.entity.Trade;
 import com.dbtraining.reconx.service.ReconciliationEngine;
+import com.dbtraining.reconx.service.SimulatedCounterpartyFeed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,10 +24,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * TICKET-ADV068 — POST /api/v1/recon/run — returns 202 + jobId
@@ -43,31 +49,63 @@ public class ReconController {
     private final ReconBreakRepository breaks;
     private final TradeRepository trades;
     private final ReconciliationEngine engine;
+    private final SimulatedCounterpartyFeed counterpartyFeed;
 
-    public ReconController(ReconBreakRepository breaks, TradeRepository trades, ReconciliationEngine engine) {
+    public ReconController(ReconBreakRepository breaks, TradeRepository trades,
+                           ReconciliationEngine engine, SimulatedCounterpartyFeed counterpartyFeed) {
         this.breaks = breaks;
         this.trades = trades;
         this.engine = engine;
+        this.counterpartyFeed = counterpartyFeed;
     }
 
     @PostMapping("/run")
     @Operation(summary = "Trigger a reconciliation job")
-    @Transactional(readOnly = true)
-    public ResponseEntity<Map<String, String>> runRecon(@Valid @RequestBody ReconRunRequest req) {
+    @Transactional
+    public ResponseEntity<Map<String, Object>> runRecon(@Valid @RequestBody ReconRunRequest req) {
         String jobId = UUID.randomUUID().toString();
 
-        // No external counterparty feed exists yet (that's the Day-9 Kafka
-        // pipeline), so this reconciles the internal book against itself —
-        // enough to drive real Timer samples without fabricating data.
-        List<TradeType> internal = trades
-                .findEquityTradesForReconciliation(req.from(), req.to(), req.counterpartyId())
-                .stream()
+        List<Trade> rows = trades.findEquityTradesForReconciliation(
+                req.from(), req.to(), req.counterpartyId());
+
+        List<TradeType> internal = rows.stream()
                 .<TradeType>map(ReconController::toEquityTradeOrNull)
                 .filter(Objects::nonNull)
                 .toList();
-        engine.reconcile(internal, internal, ReconciliationRule.EXACT);
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of("jobId", jobId, "status", "QUEUED"));
+        // The counterparty side is simulated (see SimulatedCounterpartyFeed) —
+        // there is no real external feed yet. The comparison below is the real
+        // engine; only its input is stood in for.
+        List<TradeType> external = counterpartyFeed.deriveFrom(internal);
+        List<ReconResult> results = engine.reconcile(internal, external,
+                ReconciliationRule.PRICE_TOLERANCE_1PCT);
+
+        Map<String, Long> tradeIdByRef = rows.stream()
+                .collect(Collectors.toMap(Trade::getTradeRef, Trade::getId, (a, b) -> a));
+
+        // Don't stack duplicates: a trade that is already flagged stays as the
+        // one open break until someone resolves it.
+        Set<Long> alreadyOpen = breaks.findAll().stream()
+                .filter(b -> "OPEN".equals(b.getStatus()))
+                .map(ReconBreak::getTradeId)
+                .collect(Collectors.toSet());
+
+        List<ReconBreak> raised = new ArrayList<>();
+        for (ReconResult r : results) {
+            if (r.status() != ReconResult.Status.BREAK) continue;
+            Long tradeId = tradeIdByRef.get(r.tradeRef());
+            if (tradeId == null || !alreadyOpen.add(tradeId)) continue;
+            raised.add(ReconBreak.detected(tradeId, r.discrepancyType(), r.details()));
+        }
+        breaks.saveAll(raised);
+
+        long matched = results.stream().filter(r -> r.status() == ReconResult.Status.MATCHED).count();
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of(
+                "jobId", jobId,
+                "status", "COMPLETED",
+                "tradesCompared", results.size(),
+                "matched", matched,
+                "breaksRaised", raised.size()));
     }
 
     /**
@@ -95,11 +133,33 @@ public class ReconController {
 
     @GetMapping("/jobs/{jobId}/results")
     @Operation(summary = "Get results for a recon job")
-    public List<ReconBreak> results(@PathVariable String jobId) {
-        // DONE: (TICKET-ADV069): once recon_jobs + recon_breaks tables are wired,
-        //   return breaks.findByJobId(jobId). Day-0 returns an empty list so
-        //   the React breaks-table renders "no breaks" gracefully.
-        return breaks.findAll();
+    @Transactional(readOnly = true)
+    public List<ReconBreakResponse> results(@PathVariable String jobId) {
+        // NOTE: jobId is currently ignored — breaks are not yet scoped to a job,
+        //   so every caller gets the whole open/resolved set. The UI relies on
+        //   this and passes the literal "latest"; wiring findByJobId later has
+        //   to update that call site too.
+        List<ReconBreak> all = breaks.findAll();
+
+        // Resolve tradeId -> tradeRef in one query; the entity only stores the
+        // id, which is not something an operator can act on.
+        Map<Long, String> refById = trades
+                .findAllById(all.stream().map(ReconBreak::getTradeId).filter(Objects::nonNull).toList())
+                .stream()
+                .collect(Collectors.toMap(Trade::getId, Trade::getTradeRef, (a, b) -> a));
+
+        return all.stream().map(b -> new ReconBreakResponse(
+                b.getId(),
+                b.getTradeId(),
+                // a soft-deleted trade won't come back from findAllById
+                refById.getOrDefault(b.getTradeId(), "trade #" + b.getTradeId()),
+                b.getDiscrepancyType(),
+                b.getStatus(),
+                b.getDetails(),
+                b.getDetectedAt(),
+                b.getResolvedAt(),
+                b.getResolutionNote()
+        )).toList();
     }
 
     @PutMapping("/results/{id}/resolve")

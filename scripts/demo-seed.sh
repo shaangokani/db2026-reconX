@@ -140,11 +140,13 @@ if [[ $DO_BULK -eq 1 ]]; then
   printf '\n'
   ok "statuses applied (MATCHED / UNMATCHED / DISPUTED, rest left PENDING)"
 
-  step "Triggering a reconciliation run"
-  if curl -fsS -o /dev/null -X POST "$API/v1/recon/run" \
+  step "Running reconciliation (raises real breaks)"
+  recon=$(curl -fsS -X POST "$API/v1/recon/run" \
        -H "Authorization: Bearer $ADMIN" -H 'Content-Type: application/json' \
-       -d "{\"from\":\"2026-01-01\",\"to\":\"$(date +%F)\"}" 2>/dev/null; then
-    ok "recon job accepted (drives the ADV084 timer + recon metrics)"
+       -d "{\"from\":\"2026-01-01\",\"to\":\"2026-12-31\"}" 2>/dev/null)
+  if [[ -n "$recon" ]]; then
+    ok "$(echo "$recon" | json_get "f\"compared={d['tradesCompared']} matched={d['matched']} breaks raised={d['breaksRaised']}\"")"
+    say "    (counterparty side is simulated — see SimulatedCounterpartyFeed)"
   else
     warn "recon run failed — skipping (not fatal for the demo)"
   fi

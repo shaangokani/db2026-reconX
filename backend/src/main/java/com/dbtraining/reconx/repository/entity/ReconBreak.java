@@ -33,7 +33,28 @@ public class ReconBreak {
     @Column(name = "resolution_note", length = 500)
     private String resolutionNote;
 
+    /** Why the engine raised this break, e.g. "internal=227.50/100 external=231.10/100". */
+    @Column(name = "details", length = 500)
+    private String details;
+
     public ReconBreak() {}
+
+    /**
+     * Build a break detected right now. detected_at has a DB default, but JPA
+     * inserts an explicit NULL unless the field is set here, so it is stamped
+     * in the factory rather than left to the database.
+     */
+    public static ReconBreak detected(Long tradeId, String discrepancyType, String details) {
+        ReconBreak rb = new ReconBreak();
+        rb.tradeId = tradeId;
+        rb.discrepancyType = discrepancyType;
+        rb.details = details == null || details.length() <= 500
+                ? details
+                : details.substring(0, 500);
+        rb.detectedAt = Instant.now();
+        rb.status = "OPEN";
+        return rb;
+    }
 
     public Long getId()                { return id; }
     public Long getTradeId()           { return tradeId; }
@@ -42,6 +63,7 @@ public class ReconBreak {
     public Instant getDetectedAt()     { return detectedAt; }
     public Instant getResolvedAt()     { return resolvedAt; }
     public String getResolutionNote()  { return resolutionNote; }
+    public String getDetails()         { return details; }
 
     public void setTradeId(Long v)              { this.tradeId = v; }
     public void setDiscrepancyType(String v)    { this.discrepancyType = v; }
