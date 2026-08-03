@@ -29,21 +29,26 @@ function App() {
             <Link to="/dlq">DLQ Admin</Link>
             <Link to="/trades">Trades</Link>
             <Link to="/trades/new">Add trade</Link>
-            <button 
-              role="switch" 
-              aria-checked={theme === 'dark'} 
-              className="theme-switch" 
-              onClick={toggle} 
+          </nav>
+          {/* Account/appearance controls live in their own footer rather than
+              among the nav links — and grouping them fixes the two competing
+              `margin-top: auto` rules that were splitting them apart. */}
+          <div className="layout__footer">
+            <button type="button" className="nav__signout" onClick={logout}>
+              Sign out{user.role ? ` (${user.role})` : ''}
+            </button>
+            <button
+              role="switch"
+              aria-checked={theme === 'dark'}
+              className="theme-switch"
+              onClick={toggle}
               aria-label="Toggle dark mode"
             >
               <span className="theme-switch__thumb">
                 {theme === 'dark' ? '🌙' : '☀️'}
               </span>
             </button>
-            <button type="button" className="nav__signout" onClick={logout}>
-              Sign out{user.role ? ` (${user.role})` : ''}
-            </button>
-          </nav>
+          </div>
         </aside>
       )}
       <main className="layout__main">

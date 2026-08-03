@@ -1,9 +1,11 @@
 package com.dbtraining.reconx.controller;
 
 import com.dbtraining.reconx.dto.PagedResponse;
+import com.dbtraining.reconx.dto.StatusCount;
 import com.dbtraining.reconx.dto.TradeMapper;
 import com.dbtraining.reconx.dto.TradeRequest;
 import com.dbtraining.reconx.dto.TradeResponse;
+import com.dbtraining.reconx.repository.TradeRepository;
 import com.dbtraining.reconx.repository.entity.Trade;
 import com.dbtraining.reconx.service.TradeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,10 +46,12 @@ public class TradeController {
 
     private final TradeService service;
     private final TradeMapper mapper;
+    private final TradeRepository trades;
 
-    public TradeController(TradeService service, TradeMapper mapper) {
+    public TradeController(TradeService service, TradeMapper mapper, TradeRepository trades) {
         this.service = service;
         this.mapper = mapper;
+        this.trades = trades;
     }
 
     @Deprecated(since = "v1.4.0", forRemoval = true)
@@ -69,6 +74,29 @@ public class TradeController {
             @PageableDefault(size = 20, sort = "tradeDate", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<Trade> page = service.list(from, to, status, counterpartyId, pageable);
         return PagedResponse.from(page, mapper::toResponse);
+    }
+
+    /**
+     * Persistent book totals for the dashboard. The dashboard's other figures
+     * come from the SSE feed, which only ever reflects the current browser
+     * session — this is the whole book, so the two can be shown side by side
+     * without one being mistaken for the other.
+     */
+    @GetMapping("/summary")
+    @Operation(summary = "Trade counts by status across the whole book")
+    public Map<String, Object> summary() {
+        List<StatusCount> rows = trades.countGroupedByStatus();
+        Map<String, Long> byStatus = new LinkedHashMap<>();
+        // Seed the known statuses so a status with no trades still renders as 0
+        // rather than vanishing from the breakdown entirely.
+        for (String s : List.of("PENDING", "MATCHED", "UNMATCHED", "DISPUTED", "CANCELLED")) {
+            byStatus.put(s, 0L);
+        }
+        for (StatusCount row : rows) {
+            byStatus.merge(row.status(), row.count(), Long::sum);
+        }
+        long total = byStatus.values().stream().mapToLong(Long::longValue).sum();
+        return Map.of("total", total, "byStatus", byStatus);
     }
 
     @PostMapping

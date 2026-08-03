@@ -195,10 +195,22 @@ body {
   background: hsla(255, 255, 255, 0.1);
   transform: translateX(4px);
 }
-/* Sign out sits at the bottom of the sidebar, styled to read as a nav item
-   rather than a primary action. */
+/* Sidebar footer: account + appearance controls, pinned below the nav links.
+   .layout__nav already has flex:1, so this sits at the bottom without needing
+   its own margin-top:auto (two of those competing is what split the theme
+   toggle and sign-out button apart). */
+.layout__footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid hsla(0, 0%, 100%, 0.12);
+}
+
+/* Sign out reads as a nav item rather than a primary action. */
 .nav__signout {
-  margin-top: auto;
+  flex: 1;
+  min-width: 0;
   color: hsla(0, 0%, 100%, 0.7);
   background: transparent;
   border: 1px solid hsla(0, 0%, 100%, 0.2);
@@ -447,7 +459,7 @@ button:disabled {
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 2px;
   transition: var(--transition);
-  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .theme-switch:hover {

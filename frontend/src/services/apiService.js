@@ -53,6 +53,12 @@ export const api = {
   listTrades: (params = '')  => {
     return request('GET', `/v1/trades${params}`);
   },
+  // Whole-book counts by status. The dashboard's other numbers come from the
+  // SSE feed and only cover the current session, so this is what gives it any
+  // sense of the book as a whole.
+  tradeSummary: ()           => {
+    return request('GET', '/v1/trades/summary');
+  },
   createTrade: (req)         => {
     // yup's date() schema casts the <input type="date"> string into a real
     // Date on validation; the backend's tradeDate is a plain LocalDate and

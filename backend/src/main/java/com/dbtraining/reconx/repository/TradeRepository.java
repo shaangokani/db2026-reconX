@@ -24,6 +24,18 @@ public interface TradeRepository
 
     Optional<Trade> findByTradeRef(String tradeRef);
 
+    /**
+     * Counts per status in a single query, for the dashboard summary. Trade
+     * carries @SQLRestriction("deleted_at IS NULL"), so soft-deleted rows are
+     * excluded here automatically — no extra predicate needed.
+     */
+    @Query("""
+        SELECT new com.dbtraining.reconx.dto.StatusCount(t.status, COUNT(t))
+        FROM Trade t
+        GROUP BY t.status
+        """)
+    List<com.dbtraining.reconx.dto.StatusCount> countGroupedByStatus();
+
     @Query("""
         SELECT t FROM Trade t
         JOIN FETCH t.instrument
