@@ -56,7 +56,8 @@ function AuditLog() {
           </div>
           {events.map((evt) => (
             <div key={evt.eventId} className="data-table__row" style={{ gridTemplateColumns: '1fr 2fr 1fr 1fr 1fr' }}>
-              <div>{new Date(evt.timestamp).toLocaleString()}</div>
+              {/* API field is eventTimestamp — `timestamp` gave "Invalid Date" */}
+              <div>{evt.eventTimestamp ? new Date(evt.eventTimestamp).toLocaleString() : '—'}</div>
               <div style={{ fontFamily: 'monospace', fontSize: '0.85em', color: 'var(--color-text-muted)' }}>{evt.eventId}</div>
               <div>
                 <span style={{ padding: '4px 8px', background: 'var(--color-primary-transparent)', color: 'var(--color-primary)', borderRadius: '4px', fontSize: '0.8em', fontWeight: 600 }}>
@@ -64,8 +65,10 @@ function AuditLog() {
                 </span>
               </div>
               <div>{evt.actor}</div>
+              {/* API fields are beforeState/afterState — previousState/newState
+                  do not exist, so this column rendered empty */}
               <div>
-                {evt.previousState ? `${evt.previousState} ➔ ${evt.newState}` : evt.newState}
+                {evt.beforeState ? `${evt.beforeState} ➔ ${evt.afterState ?? '—'}` : (evt.afterState ?? '—')}
               </div>
             </div>
           ))}

@@ -66,7 +66,8 @@ function DlqAdmin() {
               <div style={{ fontFamily: 'monospace', fontSize: '0.85em', color: 'var(--color-text-muted)' }}>
                 {msg.eventId}
               </div>
-              <div>{new Date(msg.createdAt).toLocaleString()}</div>
+              {/* API field is firstSeen — `createdAt` gave "Invalid Date" */}
+              <div>{msg.firstSeen ? new Date(msg.firstSeen).toLocaleString() : '—'}</div>
               <div style={{ fontSize: '0.85em', color: 'var(--color-danger)' }}>{msg.reason}</div>
               <div>
                 <span style={{ padding: '4px 8px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '4px', fontSize: '0.8em' }}>
